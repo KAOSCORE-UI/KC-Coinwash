@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KC-Coinwash</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!--  ADMIN TABLET                                       -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div id="admin-ui" class="screen hidden">
+  <div class="tablet-frame">
+    <div class="tablet-header">
+      <div class="tablet-logo">
+        <span class="logo-bubble">🫧</span>
+        <div>
+          <div class="logo-name">KC-Coinwash Admin</div>
+          <div class="logo-sub">LAUNDRY MANAGEMENT SYSTEM</div>
+        </div>
+      </div>
+      <button class="close-btn" onclick="closeAdmin()">✕ CLOSE</button>
+    </div>
+
+    <div class="tablet-body">
+      <!-- LEFT: Config -->
+      <div class="tablet-col">
+        <div class="panel">
+          <div class="panel-title">⚙ GLOBAL CONFIG</div>
+
+          <div class="cfg-row">
+            <label>Wash Fee %</label>
+            <div class="cfg-control">
+              <input type="range" id="cfg-fee" min="1" max="60" value="15">
+              <span class="cfg-val" id="cfg-fee-val">15%</span>
+            </div>
+          </div>
+
+          <div class="cfg-row">
+            <label>Duration (sec)</label>
+            <div class="cfg-control">
+              <input type="range" id="cfg-dur" min="5" max="300" value="30">
+              <span class="cfg-val" id="cfg-dur-val">30s</span>
+            </div>
+          </div>
+
+          <div class="cfg-row">
+            <label>Max Wash ($)</label>
+            <div class="cfg-control">
+              <input type="range" id="cfg-max" min="1000" max="500000" step="1000" value="50000">
+              <span class="cfg-val" id="cfg-max-val">$50,000</span>
+            </div>
+          </div>
+
+          <div class="cfg-row">
+            <label>Risk Level</label>
+            <div class="risk-btns">
+              <button class="risk-btn active" data-risk="1" onclick="setRisk(1)">LOW</button>
+              <button class="risk-btn" data-risk="2" onclick="setRisk(2)">MED</button>
+              <button class="risk-btn" data-risk="3" onclick="setRisk(3)">HIGH</button>
+            </div>
+          </div>
+
+          <button class="btn-green" onclick="pushConfig()" style="margin-top:12px">▶ APPLY CONFIG</button>
+        </div>
+
+        <!-- Place new washer -->
+        <div class="panel" style="margin-top:12px">
+          <div class="panel-title">📍 PLACE WASHER</div>
+          <p class="hint-text">Positions at your current character location &amp; heading.</p>
+          <input class="text-input" id="new-washer-label" placeholder="Label (e.g. Dock Street Laundry)" maxlength="40">
+          <button class="btn-green" onclick="placeWasher()" style="margin-top:8px">+ PLACE AT MY POSITION</button>
+        </div>
+
+        <!-- Stats -->
+        <div class="panel" style="margin-top:12px">
+          <div class="panel-title">📊 STATS</div>
+          <div class="stat-grid">
+            <div class="stat-card"><span class="stat-v" id="stat-spots">0</span><span class="stat-l">Total Spots</span></div>
+            <div class="stat-card"><span class="stat-v" id="stat-fee">15%</span><span class="stat-l">Current Fee</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Washer list -->
+      <div class="tablet-col tablet-col--wide">
+        <div class="panel" style="flex:1; display:flex; flex-direction:column;">
+          <div class="panel-title" style="margin-bottom:10px">🗺 DEPLOYED WASHERS</div>
+          <div id="washer-list" class="washer-list">
+            <div class="empty-state">No washers deployed. Place one at your position.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!--  PLAYER WASH UI                                     -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div id="wash-ui" class="screen hidden">
+  <div class="wash-panel">
+
+    <!-- Header -->
+    <div class="wash-header">
+      <div class="wash-drum-icon">
+        <div class="infinity-reactor" style="width: 42px; height: 42px;">
+            <div class="reactor-ring ring-outer"></div>
+            <div class="reactor-ring ring-middle"></div>
+            <div class="reactor-ring ring-inner"></div>
+            <div class="reactor-core" style="font-size: 14px;">
+                <i class="fa-solid fa-infinity"></i>
+            </div>
+        </div>
+      </div>
+      <div class="wash-header-text">
+        <div class="wash-title">LAUNDROMAT</div>
+        <div class="wash-subtitle" id="wash-location-label">Washing Machine</div>
+      </div>
+      <button class="close-btn" onclick="closeWash()">✕</button>
+    </div>
+
+    <!-- Main content -->
+    <div class="wash-body">
+      <!-- Amount input -->
+      <div class="wash-section">
+        <div class="wash-section-title">DIRTY MONEY TO WASH</div>
+        <div class="amount-row">
+          <span class="dollar-sign">$</span>
+          <input class="amount-input" type="number" id="wash-amount" placeholder="0" min="0">
+          <button class="btn-max" onclick="setMaxAmount()">MAX</button>
+        </div>
+        <div class="amount-hint" id="dirty-hint">Enter amount · Max: $<span id="max-label">50,000</span></div>
+      </div>
+
+      <!-- Risk selector -->
+      <div class="wash-section">
+        <div class="wash-section-title">RISK LEVEL</div>
+        <div class="risk-select-row">
+          <div class="risk-option active" data-risk="1" onclick="selectRisk(1)">
+            <div class="risk-name">LOW</div>
+            <div class="risk-desc">+0% cut · Slow</div>
+          </div>
+          <div class="risk-option" data-risk="2" onclick="selectRisk(2)">
+            <div class="risk-name">MEDIUM</div>
+            <div class="risk-desc">+3% cut · Normal</div>
+          </div>
+          <div class="risk-option" data-risk="3" onclick="selectRisk(3)">
+            <div class="risk-name">HIGH</div>
+            <div class="risk-desc">+8% cut · Fast</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fee breakdown -->
+      <div class="wash-section">
+        <div class="wash-section-title">BREAKDOWN</div>
+        <div class="breakdown-table">
+          <div class="brow"><span class="bl">Dirty in</span><span class="bv" id="bd-dirty">—</span></div>
+          <div class="brow"><span class="bl">Wash fee (<span id="bd-fee-pct">15</span>%)</span><span class="bv red" id="bd-fee">—</span></div>
+          <div class="brow"><span class="bl">Risk cut (<span id="bd-risk-pct">0</span>%)</span><span class="bv amber" id="bd-risk">—</span></div>
+          <div class="brow total"><span class="bl">Clean payout</span><span class="bv green" id="bd-clean">—</span></div>
+        </div>
+      </div>
+
+      <button class="btn-wash" id="wash-submit-btn" onclick="submitWash()">
+        <span id="wash-btn-text">🫧 START WASH</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!--  WASH PROGRESS OVERLAY (shown during washing)      -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div id="wash-overlay" class="hidden">
+  <div class="overlay-card">
+    <div class="infinity-reactor" style="margin: 0 auto 14px; width: 100px; height: 100px;">
+        <div class="reactor-ring ring-outer"></div>
+        <div class="reactor-ring ring-middle"></div>
+        <div class="reactor-ring ring-inner"></div>
+        <div class="reactor-core" style="font-size: 28px;">
+            <i class="fa-solid fa-infinity"></i>
+        </div>
+    </div>
+
+    <div class="overlay-title">WASHING IN PROGRESS</div>
+    <div class="overlay-amount" id="overlay-amount">$0 → $0</div>
+
+    <div class="overlay-progress-wrap">
+      <div class="overlay-progress-bar" id="overlay-bar"></div>
+    </div>
+    <div class="overlay-pct" id="overlay-pct">0%</div>
+    <div class="overlay-timer" id="overlay-timer">— seconds remaining</div>
+
+    <div class="overlay-warning">⚠ Do not move away from the machine</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!--  WASH COMPLETE TOAST                                -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div id="wash-toast" class="hidden">
+  <div class="toast-inner">
+    <span class="toast-icon">✓</span>
+    <div>
+      <div class="toast-title">WASH COMPLETE</div>
+      <div class="toast-sub" id="toast-sub">$0 clean deposited</div>
+    </div>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
