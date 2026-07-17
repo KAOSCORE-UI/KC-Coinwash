@@ -9,3 +9,7 @@
 - **Persistent Locations** — washer positions saved to JSON, survive resource restarts
 - **Framework Bridge** — works with ESX, QBCore, or custom; swap inventory with one config line
 - **Server-side truth** — all economy logic runs server-side; no client exploitation
+
+## Admin Usage
+
+- In-game, run `/washAdmin` (requires admin permission).
